@@ -71,20 +71,26 @@ resource "aws_instance" "myInstance" {
                   dnf module install -y nodejs:12
                   # Install yarn
                   npm install --global yarn
+                  
                   # Install ffmpeg
                   dnf install -y epel-release
                   dnf --enablerepo=powertools install -y SDL2 SDL2-devel
                   dnf install -y --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm https://download1.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-8.noarch.rpm
                   dnf install -y ffmpeg
+                  dnf update -y
+                  
+                  # Install database and more pre-reqs
+                  dnf install -y nginx postgresql postgresql-server postgresql-contrib openssl gcc-c++ make wget redis git python3
+                  ln -s /usr/bin/python3 /usr/bin/python
+                  PGSETUP_INITDB_OPTIONS='--auth-host=md5' postgresql-setup --initdb --unit postgresql
+                  systemctl enable --now redis
+                  systemctl enable --now postgresql
+                  
+                  # Configure peertube user
+                  useradd -m -d /var/www/peertube -s /bin/bash -p peertube peertube
 
-                  #yum -y install nginx postgresql postgresql-server postgresql-contrib openssl gcc-c++ make wget redis git devtoolset-7
-                  #scl enable devtoolset-7 bash
-                  #PGSETUP_INITDB_OPTIONS='--auth-host=md5' postgresql-setup --initdb --unit postgresql
-                  #systemctl enable --now redis
-                  #systemctl enable --now postgresql
-                  #systemctl start mariadb
-                  #systemctl enable mariadb
                   #firewall-cmd --permanent --add-service=http
+                  #firewall-cmd --permanent --add-service=https
                   #firewall-cmd --reload
 
                   EOF
